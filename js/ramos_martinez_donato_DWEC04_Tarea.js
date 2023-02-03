@@ -21,8 +21,8 @@ const Edificio = function (calle, numero, codigoPostal) {
     } else {
         throw console.log("El Código Postal es incorrecto");
     }
-    this._propietarios = new Array(); // Propiedad que será un Array de Objetos Propietarios
     window.alert(`construido nuevo edificio en la calle ${this._calle}, nº: ${this._numero}, CP: ${this._codigoPostal}.`);
+    this._plantasEdificio = []; // Array en donde se almacenarán el número de pisos, el número de puertas y los propietarios
     /**
      * Método Para dotar al edificio de un número de plantas y un número de puertas
      * @param {number} numplantas Número entero de Plantas que tendrá el edificio
@@ -30,14 +30,15 @@ const Edificio = function (calle, numero, codigoPostal) {
      */
     this.agregarPlantasYPuertas = function (numplantas, puertas) {
         if (isNaN(Number(numplantas)) == false && Number.isInteger(numplantas) && numplantas > 0) {
-            this._plantasEdificio = numplantas;
+            if (isNaN(Number(puertas)) == false && Number.isInteger(puertas) && puertas > 0) {
+                for (let contador = 0; contador < numplantas; contador++) {
+                    this._plantasEdificio.push(new Array(puertas));
+                }
+            } else {
+                throw console.log("El Número de Puertas es incorrecto");
+            }
         } else {
             throw console.log("El Número de Plantas es incorrecto");
-        }
-        if (isNaN(Number(puertas)) == false && Number.isInteger(puertas) && puertas > 0) {
-            this._numeroPuertas = puertas;
-        } else {
-            throw console.log("El Número de Puertas es incorrecto");
         }
     };
     /**
@@ -74,7 +75,7 @@ const Edificio = function (calle, numero, codigoPostal) {
         }
     };
     /**
-     * Método que devuelve un <code>string</code> con el Nombre de la calle en donde está ubicado el edificio
+     * Método que el Nombre de la calle en donde está ubicado el edificio
      * @returns Devuelve en <code>string</code> con el nombre de la calle
      */
     this.imprimeCalle = function () {
@@ -102,18 +103,19 @@ const Edificio = function (calle, numero, codigoPostal) {
      */
     this.agregarPropietario = function (nombre, planta, puerta) {
         if (typeof nombre === "string") {
-            if (isNaN(Number(planta)) == false && Number.isInteger(planta) && planta <= this._plantasEdificio) {
+            if (
+                isNaN(Number(planta)) == false &&
+                Number.isInteger(planta) &&
+                planta > 0 &&
+                planta <= this._plantasEdificio.length
+            ) {
                 if (
                     isNaN(Number(puerta)) == false &&
                     Number.isInteger(puerta) &&
                     puerta > 0 &&
-                    puerta <= this._numeroPuertas
+                    puerta <= this._plantasEdificio[planta - 1].length
                 ) {
-                    this._propietarios.push({
-                        nombre: nombre,
-                        planta: planta,
-                        puerta: puerta,
-                    });
+                    this._plantasEdificio[planta - 1][puerta - 1] = nombre;
                     window.alert(`${nombre} es ahora el propietario de la puerta ${puerta} de la planta ${planta}.`);
                 } else {
                     throw console.log("El Número de Puerta es incorrecto");
@@ -132,18 +134,31 @@ const Edificio = function (calle, numero, codigoPostal) {
     this.imprimePlantas = function () {
         let resultado = "";
         let encabezado = "Propietario del piso ";
-        for (let contador1 = 1; contador1 <= this._plantasEdificio; contador1++) {
-            for (let contador2 = 1; contador2 <= this._numeroPuertas; contador2++) {
-                let nombre = "";
-                this._propietarios.forEach((seleccionado) => {
-                    if (seleccionado["puerta"] == contador2 && seleccionado["planta"] == contador1) {
-                        nombre = seleccionado["nombre"];
-                    }
-                });
-                resultado += encabezado + contador2 + " de la planta " + contador1 + `: ${nombre}\n`;
+        for (let contador1 = 0; contador1 < this._plantasEdificio.length; contador1++) {
+            for (let contador2 = 0; contador2 < this._plantasEdificio[contador1].length; contador2++) {
+                resultado += encabezado + (contador2 + 1) + " de la planta " + (contador1 + 1) + ": ";
+                if (this._plantasEdificio[contador1][contador2] == undefined) {
+                    resultado += "\n";
+                } else {
+                    resultado += `${this._plantasEdificio[contador1][contador2]}\n`;
+                }
             }
         }
         return resultado;
+    };
+    /**
+     * Método para eliminar un Número de Planta entera
+     * @param {number} planta Número entero positivo correspondiente al número de planta a eliminar
+     */
+    this.eliminarPlanta = function (planta) {
+        if (
+            isNaN(Number(planta)) == false &&
+            Number.isInteger(planta) &&
+            planta > 0 &&
+            planta <= this._plantasEdificio.length
+        ) {
+            datosPlanta = this._plantasEdificio.splice(planta - 1, 1);
+        }
     };
 };
 // Instanciamos 3 objetos edificioA,edificioB y edificioC con los datos:
@@ -155,11 +170,11 @@ const Edificio = function (calle, numero, codigoPostal) {
 const edificioA = new Edificio("García Prieto", "58", "15706");
 const edificioB = new Edificio("Camino Caneiro", "29", "32004");
 const edificioC = new Edificio("San Clemente", "s/n", "15705");
-// El código postal del edificio A es: 15706.
+// Mostramos por pantalla que el código postal del edificio A es: 15706.
 window.alert(`El código postal del edificio A es ${edificioA.imprimeCodigoPostal()}.`);
-// La calle del edificio C es: San Clemente.
+// Mostramos por pantalla que la calle del edificio C es: San Clemente.
 window.alert(`La calle del edificio C es: ${edificioC.imprimeCalle()}.`);
-// El edificio B está situado en la calle Camino Caneiro número 29.
+// Mostramos por pantalla que el edificio B está situado en la calle Camino Caneiro número 29.
 window.alert(`El edificio B está situado en la calle ${edificioB.imprimeCalle()} número ${edificioB.imprimeNumero()}.`);
 // Agregamos 2 plantas y 3 puertas por planta al edificio A...
 edificioA.agregarPlantasYPuertas(2, 3);
@@ -168,17 +183,26 @@ edificioA.agregarPropietario("Jose Antonio López", 1, 1);
 edificioA.agregarPropietario("Luisa Martínez", 1, 2);
 edificioA.agregarPropietario("Marta Castellón", 1, 3);
 edificioA.agregarPropietario("Antonio Pereira", 2, 2);
-// Listado de propietarios del edificio calle García Prieto número 58
+// Mostramos por pantalla el listado de propietarios del edificio calle García Prieto número 58
 window.alert(edificioA.imprimePlantas());
+/*
+ * Revisando el último apartado de la Tarea en donde se muestra el listado de propietarios del
+ * edificio de la calle García Prieto número 58, se ve claramente que se ha eliminado  el
+ * segundo piso anterior (y por lo tanto al usuario Antonio Pereira) y se han añadido  2
+ *  plantas nuevas de 2 números cada una. Para ello, me he visto obligado a generar un
+ * nuevo método llamado eliminarPlanta(planta) que se usará para eliminar una planta
+ * anteriormente añadida
+ */
+// Elimino la planta 2 por completo
+edificioA.eliminarPlanta(2);
 // Agregamos una planta más al edificio A...
-edificioA.agregarPlantasYPuertas(3, 3);
+/*
+ * Como eliminé la planta 2 anterior, en vez de añadir 1 única planta, añado las plantas 2 y 3
+ * al mismo tiempo pero, esta vez, con 2 pisos por cada planta
+ */
+edificioA.agregarPlantasYPuertas(2, 2);
 // Agregamos un propietario más al edificio A planta 3, puerta 2...
 // Pedro Meijide es ahora el propietario de la puerta 2 de la planta 3.
-// En el enunciado desaparece Antonio Pereira. Luego el piso queda vacío
-edificioA.agregarPropietario("", 2, 2);
 edificioA.agregarPropietario("Pedro Meijide", 3, 2);
 // Listado de propietarios del edificio calle García Prieto número 58
 window.alert(edificioA.imprimePlantas());
-/* Observo que en el enunciado del problema, el primer piso tiene 3 viviendas. Sin embargo,
-el segundo y el tercer piso de este apartado únicamente tienen 2 viviendas. Con los métodos 
-que se indican en el enunciado no es posible realizar esta operación. */
